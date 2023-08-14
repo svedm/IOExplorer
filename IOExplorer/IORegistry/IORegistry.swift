@@ -6,9 +6,11 @@
 //
 
 import Foundation
+import Logging
 
 final class IORegistry {
     private var plane = kIOServicePlane
+    private lazy var logger = Logger(label: String(describing: Self.self))
 
     func enumerateEntries(for plane: IORegistryPlane) -> IORegistryEntry {
         self.plane = plane.ioKitPlane
@@ -50,7 +52,7 @@ final class IORegistry {
         )
 
         guard result == kIOReturnSuccess else {
-            print("Error IORegistryEntryGetChildIterator")
+            logger.log(level: .error, "IORegistryEntryGetChildIterator")
             return childs
         }
 
@@ -68,7 +70,7 @@ final class IORegistry {
     private func getBusyState(_ entry: io_registry_entry_t) -> UInt32 {
         var busy: UInt32 = 0
         guard IOServiceGetBusyState(entry, &busy) == kIOReturnSuccess else {
-            print("Error IOServiceGetBusyState")
+            logger.log(level: .error, "IOServiceGetBusyState")
             return busy
         }
         return busy
@@ -83,7 +85,7 @@ final class IORegistry {
         let classNamePtr = UnsafeMutableRawPointer(className).bindMemory(to: Int8.self, capacity: 1)
 
         guard IOObjectGetClass(entry, classNamePtr) == kIOReturnSuccess else {
-            print("Error IOObjectGetClass")
+            logger.log(level: .error, "IOObjectGetClass")
             return nil
         }
 
@@ -104,7 +106,7 @@ final class IORegistry {
         let namePtr = UnsafeMutableRawPointer(pathName).bindMemory(to: Int8.self, capacity: 1)
 
         guard IORegistryEntryGetPath(entry, plane, namePtr) == kIOReturnSuccess else {
-            print("Error IORegistryEntryGetPath")
+            logger.log(level: .error, "IORegistryEntryGetPath")
             return nil
         }
 
@@ -116,7 +118,7 @@ final class IORegistry {
         let locationPtr = UnsafeMutableRawPointer(location).bindMemory(to: Int8.self, capacity: 1)
 
         guard IORegistryEntryGetLocationInPlane(entry, plane, locationPtr) == kIOReturnSuccess else {
-            print("Error IORegistryEntryGetLocationInPlane")
+            logger.log(level: .error, "IORegistryEntryGetLocationInPlane")
             return nil
         }
 
@@ -126,10 +128,8 @@ final class IORegistry {
     private func getEntryName(_ entry: io_registry_entry_t) -> String? {
         let pointer = UnsafeMutablePointer<io_name_t>.allocate(capacity: 1)
 
-        let result = IORegistryEntryGetName(entry, pointer)
-        if result != kIOReturnSuccess {
-            print("Error IORegistryEntryGetName(): "
-                  + (String(cString: mach_error_string(result), encoding: String.Encoding.ascii) ?? "unknown error"))
+        guard IORegistryEntryGetName(entry, pointer) == kIOReturnSuccess else {
+            logger.log(level: .error, "IORegistryEntryGetName")
             return nil
         }
 
@@ -177,7 +177,6 @@ final class IORegistry {
             case let value as [Any]:
                 return .array(value.map(convertAny))
             default:
-                print("Unknown: \(type(of: value)) \(value)")
                 return .unknown(value)
         }
     }
