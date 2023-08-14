@@ -1,0 +1,12 @@
+//
+//  BaseConfig.xcconfig
+//  IOExplorer
+//
+//  Created by Svetoslav on 14.08.2023.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://help.apple.com/xcode/#/dev745c5c974
+
+PRODUCT_BUNDLE_IDENTIFIER = net.svedm.IOExplorer
+CODE_SIGN_STYLE = Manual
