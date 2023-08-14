@@ -23,7 +23,3 @@ struct BadgeView: View {
             .clipShape(RoundedRectangle(cornerRadius: 4))
     }
 }
-
-#Preview {
-    BadgeView("1112")
-}
